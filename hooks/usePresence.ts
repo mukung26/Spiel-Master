@@ -7,11 +7,13 @@ import { UserProfile } from '../types';
 export const usePresence = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [activeUsers, setActiveUsers] = useState<UserProfile[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // 1. Listen for Auth Changes
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
+      setLoading(false); // Auth check completed
       
       if (user) {
         // 2. Setup Presence in Realtime DB
@@ -58,5 +60,5 @@ export const usePresence = () => {
     };
   }, []);
 
-  return { currentUser, activeUsers };
+  return { currentUser, activeUsers, loading };
 };

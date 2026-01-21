@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Spiel } from './types';
+import { Spiel, View } from './types';
 import { SPIELS, INITIAL_CATEGORIES } from './constants';
 import { Header } from './components/Header';
 import { SearchBar } from './components/SearchBar';
@@ -10,7 +10,8 @@ import { Toast } from './components/Toast';
 import { Sidebar } from './components/Sidebar';
 import { MessageModal } from './components/MessageModal';
 import { ConfirmationModal } from './components/ConfirmationModal';
-import { Loader2, Trash2, ArchiveRestore } from 'lucide-react';
+import { Loader2, Trash2, ArchiveRestore, Lock } from 'lucide-react';
+import { Layout } from './components/Layout';
 
 // Firebase & Presence
 import { signInWithPopup, signOut } from 'firebase/auth';
@@ -33,13 +34,16 @@ const ADMIN_EMAILS = [
 
 const App: React.FC = () => {
   // Presence Hook
-  const { currentUser, activeUsers } = usePresence();
+  const { currentUser, activeUsers, loading: authLoading } = usePresence();
 
   // State
   const [spiels, setSpiels] = useState<Spiel[]>(SPIELS);
   const [categories, setCategories] = useState<string[]>(INITIAL_CATEGORIES);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | 'All'>('All');
+  
+  // Navigation State
+  const [currentView, setCurrentView] = useState<View>(View.HOME);
   
   // Derived Admin State
   const isAdmin = useMemo(() => {
@@ -92,8 +96,10 @@ const App: React.FC = () => {
     setLoadingMessage('');
   };
 
-  // Fetch from Cloud
+  // Fetch from Cloud (Only if user is logged in)
   useEffect(() => {
+    if (!currentUser) return;
+
     const initData = async () => {
       const url = constructUrl('/spiels.json');
       console.log("Fetching from:", url);
@@ -131,7 +137,7 @@ const App: React.FC = () => {
       }
     };
     initData();
-  }, []);
+  }, [currentUser]);
 
   // Filter Logic
   const filteredSpiels = useMemo(() => {
@@ -194,6 +200,7 @@ const App: React.FC = () => {
   const handleLogout = async () => {
     await signOut(auth);
     setShowTrash(false); 
+    setCurrentView(View.HOME); // Reset view on logout
     showToast('Logged out');
   };
 
@@ -433,6 +440,78 @@ const App: React.FC = () => {
     }
   };
 
+  // --------------------------------------------------------------------------
+  // AUTH GATE RENDER
+  // --------------------------------------------------------------------------
+
+  // 1. Initial Load Check
+  if (authLoading) {
+    return (
+      <div className="h-screen w-full bg-slate-900 flex flex-col items-center justify-center">
+        <Loader2 className="animate-spin text-blue-500 w-12 h-12 mb-4" />
+        <p className="text-slate-400 font-medium animate-pulse">Initializing Studio...</p>
+      </div>
+    );
+  }
+
+  // 2. Login Page
+  if (!currentUser) {
+    return (
+      <div className="h-screen w-full bg-gradient-to-br from-slate-900 to-slate-950 flex flex-col items-center justify-center p-4">
+        <div className="w-full max-w-md bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-2xl flex flex-col items-center text-center">
+          
+          <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-blue-500/20">
+             <Lock className="text-white w-10 h-10" />
+          </div>
+
+          <h1 className="text-3xl font-bold text-white mb-2">Gemini Studio</h1>
+          <p className="text-slate-400 mb-8 leading-relaxed">
+            Restricted Access. Please sign in with your corporate account to access Shopee response templates and AI tools.
+          </p>
+
+          <button 
+            onClick={handleGoogleLogin}
+            className="w-full bg-white hover:bg-slate-50 text-slate-900 font-bold py-4 rounded-xl flex items-center justify-center gap-3 transition-transform hover:scale-[1.02] active:scale-[0.98]"
+          >
+            <i className="fa-brands fa-google text-xl text-blue-600"></i>
+            Sign in with Google
+          </button>
+
+          <p className="mt-8 text-xs text-slate-600 font-medium">
+            Shopee CS Spiel Master &copy; 2024
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // --------------------------------------------------------------------------
+  // MAIN APP RENDER
+  // --------------------------------------------------------------------------
+
+  // Use Layout for Dashboard/Chat/Video etc if not in Home view, or keep existing Home view logic.
+  // Integrating the Layout component created earlier into the App structure.
+  
+  if (currentView !== View.HOME) {
+    return (
+      <>
+       <Layout 
+         currentView={currentView}
+         onNavigate={setCurrentView}
+       />
+        {/* We still need global modals here if we want them accessible inside sub-views */}
+        {modalConfig.show && (
+          <MessageModal 
+            title={modalConfig.title} 
+            message={modalConfig.message} 
+            type={modalConfig.type} 
+            onClose={() => setModalConfig({ ...modalConfig, show: false })} 
+          />
+        )}
+      </>
+    );
+  }
+
   return (
     <div className="h-screen flex flex-col bg-[#f0f2f5] dark:bg-[#202124] transition-colors duration-300 overflow-hidden font-sans relative">
       
@@ -461,8 +540,28 @@ const App: React.FC = () => {
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
         <aside className="w-72 bg-white dark:bg-[#202124] border-r border-transparent flex-shrink-0 hidden md:flex flex-col z-10 transition-colors duration-300">
-          <div className="p-4 pl-6">
-            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Directory</h3>
+          
+          {/* Added Navigation to Sidebar for desktop */}
+          <div className="p-4 pl-6 border-b border-gray-100 dark:border-gray-800">
+             <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Modules</h3>
+             <div className="space-y-1">
+               <button onClick={() => setCurrentView(View.CHAT)} className="w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg flex items-center gap-2">
+                 <i className="fa-solid fa-robot w-5"></i> Chat AI
+               </button>
+               <button onClick={() => setCurrentView(View.IMAGE)} className="w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg flex items-center gap-2">
+                 <i className="fa-solid fa-image w-5"></i> Image AI
+               </button>
+               <button onClick={() => setCurrentView(View.VIDEO)} className="w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg flex items-center gap-2">
+                 <i className="fa-solid fa-video w-5"></i> Video Studio
+               </button>
+                <button onClick={() => setCurrentView(View.LIVE)} className="w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg flex items-center gap-2">
+                 <i className="fa-solid fa-microphone w-5"></i> Live Mode
+               </button>
+             </div>
+          </div>
+
+          <div className="p-4 pl-6 pt-6">
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Templates</h3>
           </div>
           <div className="flex-1 overflow-y-auto custom-scrollbar px-3 pb-4">
              {filteredSpiels.length > 0 ? (
@@ -477,6 +576,14 @@ const App: React.FC = () => {
 
         {/* Main */}
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+          
+          {/* Mobile Nav Header */}
+          <div className="md:hidden bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 p-2 overflow-x-auto flex gap-2 no-scrollbar">
+             <button onClick={() => setCurrentView(View.CHAT)} className="px-4 py-2 bg-blue-50 dark:bg-slate-800 rounded-full text-xs font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap">Chat AI</button>
+             <button onClick={() => setCurrentView(View.IMAGE)} className="px-4 py-2 bg-blue-50 dark:bg-slate-800 rounded-full text-xs font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap">Image AI</button>
+             <button onClick={() => setCurrentView(View.VIDEO)} className="px-4 py-2 bg-blue-50 dark:bg-slate-800 rounded-full text-xs font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap">Video</button>
+          </div>
+
           <div className="bg-[#f0f2f5]/90 dark:bg-[#202124]/90 backdrop-blur-md z-20 px-4 sm:px-8 pt-6 pb-4 transition-colors duration-300">
             <div className="max-w-4xl mx-auto w-full">
               <div className="mb-6 flex justify-center">
