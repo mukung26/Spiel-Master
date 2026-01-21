@@ -20,20 +20,25 @@ export const generateText = async (prompt: string, history: { role: string, part
 
 export const generateImage = async (prompt: string): Promise<string> => {
   const ai = getClient();
-  // Using Imagen 3 (via version 4.0 endpoint) for high quality generation
-  const response = await ai.models.generateImages({
-    model: 'imagen-4.0-generate-001',
-    prompt: prompt,
+  // Using gemini-2.5-flash-image as default per guidelines
+  const response = await ai.models.generateContent({
+    model: 'gemini-2.5-flash-image',
+    contents: {
+      parts: [{ text: prompt }]
+    },
     config: {
-      numberOfImages: 1,
-      outputMimeType: 'image/jpeg',
-      aspectRatio: '1:1',
+      imageConfig: {
+        aspectRatio: '1:1',
+      },
     },
   });
 
-  if (response.generatedImages && response.generatedImages.length > 0) {
-    const base64EncodeString = response.generatedImages[0].image.imageBytes;
-    return `data:image/jpeg;base64,${base64EncodeString}`;
+  if (response.candidates?.[0]?.content?.parts) {
+    for (const part of response.candidates[0].content.parts) {
+      if (part.inlineData) {
+        return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+      }
+    }
   }
   throw new Error("No image generated");
 };

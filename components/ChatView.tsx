@@ -40,10 +40,13 @@ export const ChatView: React.FC = () => {
 
     try {
       // Prepare history for context
-      const history = messages.map(m => ({
-        role: m.role,
-        parts: [{ text: m.text }]
-      }));
+      // IMPORTANT: Filter out the welcome message to ensure history starts correctly (e.g. User turn)
+      const history = messages
+        .filter(m => m.id !== 'welcome')
+        .map(m => ({
+          role: m.role,
+          parts: [{ text: m.text }]
+        }));
 
       const responseText = await generateText(input, history);
       
