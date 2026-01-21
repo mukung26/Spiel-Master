@@ -28,7 +28,7 @@ const constructUrl = (path: string) => {
 
 // Define Admins here
 const ADMIN_EMAILS = [
-  "jerwincruspero611@gmail.com", @
+  "jerwincruspero611@gmail.com",
   "jcruspero3263@gmail.com",
   "segagt505@shopeemobile-external.com"
 ];
