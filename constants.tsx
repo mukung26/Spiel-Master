@@ -1,4 +1,3 @@
-
 import { Spiel } from './types';
 
 export const DEFAULT_FIREBASE_URL = "https://spiel-master-1a1df-default-rtdb.asia-southeast1.firebasedatabase.app/";
@@ -13,6 +12,66 @@ export const INITIAL_CATEGORIES = [
   'Marketing',
   'General Enquiries'
 ];
+
+// Extracted from the provided PDF/OCR content
+export const SOP_CONTEXT = `
+OFFICIAL SHOPEE CS SOP (STRICT ADHERENCE REQUIRED)
+
+1. LOGISTICS & DELIVERY
+- Delivery Timeframes:
+  - Brazil (BR): 12-20 days.
+  - Philippines (PH), Singapore (SG), Vietnam (VN), Taiwan (TW): 5-7 days (PH up to 9).
+  - Malaysia (MY): 5-10 days.
+  - Thailand (TH): 2-7 days.
+- Stuck in Customs/Tax (BR): 
+  - If tax notice received: Custumer must pay via 'Minhas Importações' on Correios.
+  - If refused/unpaid: Order cancels automatically (or customer fills refusal form).
+  - Invalid CPF (BR): Customer must update CPF on Federal Revenue website and Shopee app.
+- No Movement/Delay:
+  - If within Estimated Delivery Time (EDT): Ask to wait.
+  - If exceeded EDT: Apologize, offer 10% voucher (cap $1, no min spend), suggest refund request if very late.
+  - "Delivered" but not received: Check neighbors/family. If not found, request Refund -> "Order Not Received".
+- Change Address:
+  - "To Pay" / "To Ship" (Not processed): Customer can change in app once.
+  - "To Ship" (Processed/Printed) or "Shipped": Cannot change. Advise to cancel (if possible) or refuse delivery.
+
+2. CANCELLATIONS
+- Status "To Pay": Customer can cancel or ignore (auto-cancels).
+- Status "To Ship": Customer can request cancel. If seller hasn't arranged shipment, it auto-processes. If arranged, seller decides.
+- Status "Shipped": Cannot cancel. Customer must refuse delivery or request Return/Refund after receipt.
+- "Selected items can't be checked out": Different shipping locations. Checkout separately.
+
+3. PRODUCT ISSUES (DAMAGED, WRONG, MISSING)
+- Order Amount <= $1: 
+  - Offer 100% Voucher to keep item. No return needed.
+- Order Amount > $1 AND <= $5:
+  - Ask for photo/video evidence.
+  - Offer 100% Voucher to keep item. No return needed.
+- Order Amount > $5:
+  - Ask for evidence.
+  - Escalate to L2 Team (Specialist) or advise Return & Refund. L2 can issue vouchers >$5.
+
+4. CHANGE OF MIND (RECEIVED ITEM)
+- Policy: Return is allowed if within guarantee period.
+- Retention Strategy (Try this first): 
+  - Offer 10% Voucher (Cap $1) to keep the item.
+  - If refused: Accept Return & Refund.
+
+5. PRODUCT NOT MATCHING DESCRIPTION
+- Unclear/Misleading PDP:
+  - Order <= $1: 50% Voucher (Cap $1).
+  - Order > $1: Ask evidence. Offer 100% Voucher (Cap $1/$3/$5 depending on value) to keep item.
+  - > $5: Escalate to L2.
+
+6. REFUNDS
+- Times: ShopeePay (1-3 days), Credit Card (7-14 days), Bank (up to 60 days).
+- Amount Mismatch: Refund is for Product Price only. Tax/Shipping fees are usually non-refundable or handled separately depending on site/scenario.
+
+7. GENERAL & MARKETING
+- Dropshipping: Not supported. Recommend Affiliate program.
+- Vouchers: If robot didn't send review voucher -> For SCS: Escalate L2. For LVT: Resend manually.
+- Chat Tone: Professional, Empathetic, "We/Us" (acting as the Seller).
+`;
 
 const baseTime = Date.now();
 

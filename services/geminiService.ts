@@ -1,4 +1,5 @@
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
+import { SOP_CONTEXT } from "../constants";
 
 // Initialize the client with validation and fallback
 const getClient = () => {
@@ -23,6 +24,21 @@ export const generateText = async (prompt: string, history: { role: string, part
     const chat = ai.chats.create({
       model: model,
       history: history,
+      config: {
+        systemInstruction: `
+          You are an expert Shopee Seller Support Assistant working for the 'Shopee Choice' (SCS) and 'Lovito' (LVT) stores.
+          Your goal is to assist human Customer Service Agents by answering their questions or drafting responses for buyers based STRICTLY on the Standard Operating Procedures (SOP).
+
+          Here is the SOP knowledge base you must follow:
+          ${SOP_CONTEXT}
+
+          Rules:
+          1. Act as a Seller: When asked to draft a response to a buyer, use a professional, empathetic, and helpful tone (use "We", "Our store").
+          2. Follow SOP: If a user asks about policy (e.g., "Can I cancel?", "How much refund?"), check the SOP context above. Do not hallucinate policies.
+          3. Vouchers: Be precise about voucher amounts (10%, 50%, 100%) and caps ($1, $5) based on the SOP rules for the specific issue (Missing item, Damaged, Change of Mind).
+          4. Be Concise: Give the agent the exact answer or the draft script they need.
+        `
+      }
     });
 
     const response: GenerateContentResponse = await chat.sendMessage({ message: prompt });
@@ -94,6 +110,12 @@ export const analyzeImage = async (file: File, prompt: string): Promise<string> 
           },
           { text: prompt || "Describe this image." }
         ]
+      },
+      config: {
+        systemInstruction: `
+          You are a Shopee Seller Support Assistant. Analyze images provided (e.g., screenshots of errors, tracking, or damaged products) based on the following SOP context if relevant:
+          ${SOP_CONTEXT}
+        `
       }
     });
 
