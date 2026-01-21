@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { generateText } from '../services/geminiService';
 import { ChatMessage } from '../types';
-import { Send, Loader2, Bot, User } from 'lucide-react';
+import { Send, Loader2, Bot, User, AlertCircle } from 'lucide-react';
 
 export const ChatView: React.FC = () => {
   const [input, setInput] = useState('');
@@ -40,9 +40,9 @@ export const ChatView: React.FC = () => {
 
     try {
       // Prepare history for context
-      // IMPORTANT: Filter out the welcome message to ensure history starts correctly (e.g. User turn)
+      // IMPORTANT: Filter out the welcome message and any empty messages to ensure history is valid
       const history = messages
-        .filter(m => m.id !== 'welcome')
+        .filter(m => m.id !== 'welcome' && m.text.trim() !== '')
         .map(m => ({
           role: m.role,
           parts: [{ text: m.text }]
@@ -57,12 +57,12 @@ export const ChatView: React.FC = () => {
         timestamp: new Date()
       };
       setMessages(prev => [...prev, botMsg]);
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
       const errorMsg: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: 'model',
-        text: "Sorry, I encountered an error. Please try again.",
+        text: `Error: ${error.message || 'Something went wrong.'} \n\nPlease check your API Key configuration in .env.local`,
         timestamp: new Date()
       };
       setMessages(prev => [...prev, errorMsg]);
@@ -84,9 +84,14 @@ export const ChatView: React.FC = () => {
               ${msg.role === 'user' 
                 ? 'bg-blue-600 text-white rounded-br-none' 
                 : 'bg-slate-800 text-slate-200 rounded-bl-none border border-slate-700'}
+              ${msg.text.startsWith('Error:') ? 'border-red-500/50 bg-red-900/20' : ''}
             `}>
               <div className="mr-3 mt-1 flex-shrink-0">
-                {msg.role === 'user' ? <User size={18} /> : <Bot size={18} />}
+                {msg.text.startsWith('Error:') ? (
+                    <AlertCircle size={18} className="text-red-400" />
+                ) : (
+                    msg.role === 'user' ? <User size={18} /> : <Bot size={18} />
+                )}
               </div>
               <div className="whitespace-pre-wrap leading-relaxed text-sm md:text-base">
                 {msg.text}
@@ -94,6 +99,14 @@ export const ChatView: React.FC = () => {
             </div>
           </div>
         ))}
+        {loading && (
+           <div className="flex justify-start">
+             <div className="bg-slate-800 border border-slate-700 rounded-2xl rounded-bl-none p-4 shadow-lg flex items-center gap-2">
+               <Loader2 className="animate-spin text-blue-500" size={16} />
+               <span className="text-slate-400 text-sm">Gemini is thinking...</span>
+             </div>
+           </div>
+        )}
         <div ref={messagesEndRef} />
       </div>
 
