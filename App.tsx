@@ -483,7 +483,7 @@ const App: React.FC = () => {
                 <Lock size={12} />
                 <span>Shopee CS Secure Workspace</span>
             </div>
-            <span className="opacity-70 font-semibold tracking-wide">Owner: @Kong</span>
+            <span className="opacity-70 font-semibold tracking-wide">@Kong</span>
           </div>
         </div>
       </div>
