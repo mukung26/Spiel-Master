@@ -10,7 +10,7 @@ import { Toast } from './components/Toast';
 import { Sidebar } from './components/Sidebar';
 import { MessageModal } from './components/MessageModal';
 import { ConfirmationModal } from './components/ConfirmationModal';
-import { Loader2, Trash2, ArchiveRestore, Lock } from 'lucide-react';
+import { Loader2, Trash2, ArchiveRestore, Lock, ShoppingBag } from 'lucide-react';
 import { Layout } from './components/Layout';
 
 // Firebase & Presence
@@ -28,8 +28,9 @@ const constructUrl = (path: string) => {
 
 // Define Admins here
 const ADMIN_EMAILS = [
-  "admin@shopee.com", 
-  "your-email@gmail.com" // TODO: Add your google email here to be admin
+  "jerwincruspero611@gmail.com", 
+  "jcruspero3263@gmail.com",
+  "segagt505@shopeemobile-external.com"
 ];
 
 const App: React.FC = () => {
@@ -185,7 +186,7 @@ const App: React.FC = () => {
         showModal(
             'Authorized Domain Needed', 
             `Your current domain (${domain}) is not authorized in Firebase Console.\n\n` + 
-            `1. Go to Firebase Console -> Build -> Authentication -> Settings -> Authorized Domains\n` +
+            `1. Go to Firebase Console -> Authentication -> Settings -> Authorized Domains\n` +
             `2. Add Domain: ${domain}`,
             'error'
         );
@@ -447,9 +448,9 @@ const App: React.FC = () => {
   // 1. Initial Load Check
   if (authLoading) {
     return (
-      <div className="h-screen w-full bg-slate-900 flex flex-col items-center justify-center">
-        <Loader2 className="animate-spin text-blue-500 w-12 h-12 mb-4" />
-        <p className="text-slate-400 font-medium animate-pulse">Initializing Studio...</p>
+      <div className="h-screen w-full bg-slate-50 dark:bg-slate-900 flex flex-col items-center justify-center">
+        <Loader2 className="animate-spin text-orange-500 w-12 h-12 mb-4" />
+        <p className="text-orange-600 dark:text-orange-400 font-medium animate-pulse">Initializing Shopee Studio...</p>
       </div>
     );
   }
@@ -457,29 +458,33 @@ const App: React.FC = () => {
   // 2. Login Page
   if (!currentUser) {
     return (
-      <div className="h-screen w-full bg-gradient-to-br from-slate-900 to-slate-950 flex flex-col items-center justify-center p-4">
-        <div className="w-full max-w-md bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-2xl flex flex-col items-center text-center">
+      <div className="h-screen w-full bg-gradient-to-br from-orange-500 to-red-600 flex flex-col items-center justify-center p-4">
+        <div className="w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/20 p-8 rounded-3xl shadow-2xl flex flex-col items-center text-center">
           
-          <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-blue-500/20">
-             <Lock className="text-white w-10 h-10" />
+          <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+             <ShoppingBag className="text-orange-500 w-10 h-10" />
           </div>
 
-          <h1 className="text-3xl font-bold text-white mb-2">Gemini Studio</h1>
-          <p className="text-slate-400 mb-8 leading-relaxed">
-            Restricted Access. Please sign in with your corporate account to access Shopee response templates and AI tools.
+          <h1 className="text-3xl font-black text-white mb-2 tracking-tight">Spiel Master</h1>
+          <p className="text-white/80 mb-8 leading-relaxed font-medium">
+            Restricted Access. Please sign in to access Shopee CS response templates and Gemini AI tools.
           </p>
 
           <button 
             onClick={handleGoogleLogin}
-            className="w-full bg-white hover:bg-slate-50 text-slate-900 font-bold py-4 rounded-xl flex items-center justify-center gap-3 transition-transform hover:scale-[1.02] active:scale-[0.98]"
+            className="w-full bg-white hover:bg-orange-50 text-orange-600 font-bold py-4 rounded-xl flex items-center justify-center gap-3 transition-transform hover:scale-[1.02] active:scale-[0.98] shadow-xl"
           >
-            <i className="fa-brands fa-google text-xl text-blue-600"></i>
+            <i className="fa-brands fa-google text-xl"></i>
             Sign in with Google
           </button>
 
-          <p className="mt-8 text-xs text-slate-600 font-medium">
-            Shopee CS Spiel Master &copy; 2024
-          </p>
+          <div className="mt-8 flex flex-col items-center gap-1 text-xs text-white/60 font-medium">
+            <div className="flex items-center gap-2">
+                <Lock size={12} />
+                <span>Shopee CS Secure Workspace</span>
+            </div>
+            <span className="opacity-70 font-semibold tracking-wide">Owner: @Kong</span>
+          </div>
         </div>
       </div>
     );
@@ -489,9 +494,7 @@ const App: React.FC = () => {
   // MAIN APP RENDER
   // --------------------------------------------------------------------------
 
-  // Use Layout for Dashboard/Chat/Video etc if not in Home view, or keep existing Home view logic.
-  // Integrating the Layout component created earlier into the App structure.
-  
+  // Use Layout for Dashboard/Chat/Video etc if not in Home view
   if (currentView !== View.HOME) {
     return (
       <>
@@ -519,7 +522,7 @@ const App: React.FC = () => {
       {isGlobalLoading && (
         <div className="fixed inset-0 z-[80] bg-black/50 backdrop-blur-sm flex items-center justify-center flex-col">
           <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-2xl flex flex-col items-center">
-             <Loader2 className="animate-spin text-blue-500 w-12 h-12 mb-4" />
+             <Loader2 className="animate-spin text-orange-500 w-12 h-12 mb-4" />
              <p className="text-lg font-bold text-gray-800 dark:text-white animate-pulse">{loadingMessage}</p>
           </div>
         </div>
@@ -571,6 +574,13 @@ const App: React.FC = () => {
                  {showTrash ? "Trash is empty." : "No spiels found."}
                </div>
              )}
+          </div>
+          
+          {/* Footer Signature */}
+          <div className="p-4 border-t border-gray-100 dark:border-gray-800 text-center">
+             <p className="text-[10px] text-gray-400 dark:text-gray-600 font-bold uppercase tracking-widest">
+               &copy; 2024 • @Kong
+             </p>
           </div>
         </aside>
 
