@@ -28,7 +28,7 @@ const constructUrl = (path: string) => {
 
 // Define Admins here
 const ADMIN_EMAILS = [
-  "jerwincruspero611@gmail.com", 
+  "jerwincruspero611@gmail.com", @
   "jcruspero3263@gmail.com",
   "segagt505@shopeemobile-external.com"
 ];
@@ -66,6 +66,10 @@ const App: React.FC = () => {
 
   const [syncStatus, setSyncStatus] = useState<'local' | 'synced' | 'cloud' | 'error'>('local');
   const [isDarkMode, setIsDarkMode] = useState(false);
+
+  // Sidebar Toggles
+  const [isModulesOpen, setIsModulesOpen] = useState(true);
+  const [isTemplatesOpen, setIsTemplatesOpen] = useState(true);
 
   // Modal State
   const [modalConfig, setModalConfig] = useState<{show: boolean, title: string, message: string, type: 'success' | 'error' | 'info'}>({
@@ -544,10 +548,17 @@ const App: React.FC = () => {
         {/* Sidebar */}
         <aside className="w-72 bg-white dark:bg-[#202124] border-r border-transparent flex-shrink-0 hidden md:flex flex-col z-10 transition-colors duration-300">
           
-          {/* Added Navigation to Sidebar for desktop */}
+          {/* Modules Section */}
           <div className="p-4 pl-6 border-b border-gray-100 dark:border-gray-800">
-             <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Modules</h3>
-             <div className="space-y-1">
+             <button 
+                onClick={() => setIsModulesOpen(!isModulesOpen)}
+                className="flex items-center justify-between w-full mb-2 group focus:outline-none"
+             >
+                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors">Modules</h3>
+                <i className={`fa-solid fa-chevron-down text-xs text-gray-400 transition-transform duration-200 ${!isModulesOpen ? '-rotate-90' : ''}`}></i>
+             </button>
+             
+             <div className={`space-y-1 overflow-hidden transition-all duration-300 ease-in-out ${isModulesOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
                <button onClick={() => setCurrentView(View.CHAT)} className="w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg flex items-center gap-2">
                  <i className="fa-solid fa-robot w-5"></i> Chat AI
                </button>
@@ -563,23 +574,33 @@ const App: React.FC = () => {
              </div>
           </div>
 
-          <div className="p-4 pl-6 pt-6">
-            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Templates</h3>
-          </div>
-          <div className="flex-1 overflow-y-auto custom-scrollbar px-3 pb-4">
-             {filteredSpiels.length > 0 ? (
-               <Sidebar spiels={filteredSpiels} onSelectSpiel={scrollToSpiel} />
-             ) : (
-               <div className="p-4 text-center text-gray-400 dark:text-gray-500 text-sm">
-                 {showTrash ? "Trash is empty." : "No spiels found."}
-               </div>
-             )}
+          {/* Templates Section */}
+          <div className="flex flex-col flex-1 min-h-0">
+              <div className="p-4 pl-6 pt-6 flex-shrink-0">
+                <button 
+                    onClick={() => setIsTemplatesOpen(!isTemplatesOpen)}
+                    className="flex items-center justify-between w-full mb-2 group focus:outline-none"
+                >
+                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors">Templates</h3>
+                    <i className={`fa-solid fa-chevron-down text-xs text-gray-400 transition-transform duration-200 ${!isTemplatesOpen ? '-rotate-90' : ''}`}></i>
+                </button>
+              </div>
+
+              <div className={`overflow-y-auto custom-scrollbar px-3 pb-4 transition-all duration-300 ${isTemplatesOpen ? 'flex-1 opacity-100' : 'flex-none h-0 opacity-0'}`}>
+                 {filteredSpiels.length > 0 ? (
+                   <Sidebar spiels={filteredSpiels} onSelectSpiel={scrollToSpiel} />
+                 ) : (
+                   <div className="p-4 text-center text-gray-400 dark:text-gray-500 text-sm">
+                     {showTrash ? "Trash is empty." : "No spiels found."}
+                   </div>
+                 )}
+              </div>
           </div>
           
           {/* Footer Signature */}
-          <div className="p-4 border-t border-gray-100 dark:border-gray-800 text-center">
+          <div className="p-4 border-t border-gray-100 dark:border-gray-800 text-center mt-auto">
              <p className="text-[10px] text-gray-400 dark:text-gray-600 font-bold uppercase tracking-widest">
-               &copy; 2024 • @Kong
+               &copy; 2026 • @Kong
              </p>
           </div>
         </aside>
