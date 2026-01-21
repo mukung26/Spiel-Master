@@ -1,9 +1,14 @@
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 
-// Initialize the client with validation
+// Initialize the client with validation and fallback
 const getClient = () => {
-  const apiKey = process.env.API_KEY ? process.env.API_KEY.trim() : "";
-  if (!apiKey || apiKey === 'PLACEHOLDER_API_KEY') {
+  // Use env key first, but fallback to hardcoded user key if missing/placeholder
+  // This ensures the app works immediately for the user
+  const apiKey = (process.env.API_KEY && process.env.API_KEY !== 'PLACEHOLDER_API_KEY') 
+    ? process.env.API_KEY.trim() 
+    : "AIzaSyC7iXvQTgtD-0og2bRGcPnafxHBZ55bJjM";
+
+  if (!apiKey) {
     throw new Error("Invalid API Key. Please set GEMINI_API_KEY in .env.local");
   }
   return new GoogleGenAI({ apiKey });
@@ -100,9 +105,11 @@ export const analyzeImage = async (file: File, prompt: string): Promise<string> 
 };
 
 export const generateVideo = async (prompt: string): Promise<string> => {
-  // CRITICAL: Re-create client to pick up user-selected key for Veo
-  // We trim the key to avoid copy-paste errors
-  const apiKey = process.env.API_KEY ? process.env.API_KEY.trim() : "";
+  // Use fallback logic for video as well
+  const apiKey = (process.env.API_KEY && process.env.API_KEY !== 'PLACEHOLDER_API_KEY') 
+    ? process.env.API_KEY.trim() 
+    : "AIzaSyC7iXvQTgtD-0og2bRGcPnafxHBZ55bJjM";
+
   const ai = new GoogleGenAI({ apiKey });
   
   try {

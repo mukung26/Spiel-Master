@@ -70,7 +70,13 @@ export const LiveView: React.FC = () => {
       streamRef.current = stream;
 
       addLog("Connecting to Gemini Live...");
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+
+      // Fallback API Key logic for LiveView
+      const apiKey = (process.env.API_KEY && process.env.API_KEY !== 'PLACEHOLDER_API_KEY') 
+        ? process.env.API_KEY.trim() 
+        : "AIzaSyC7iXvQTgtD-0og2bRGcPnafxHBZ55bJjM";
+        
+      const ai = new GoogleGenAI({ apiKey });
       const model = 'gemini-2.5-flash-native-audio-preview-12-2025';
 
       // Create a promise wrapper for the session
