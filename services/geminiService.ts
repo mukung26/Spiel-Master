@@ -2,7 +2,7 @@ import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 
 // Initialize the client with validation
 const getClient = () => {
-  const apiKey = process.env.API_KEY;
+  const apiKey = process.env.API_KEY ? process.env.API_KEY.trim() : "";
   if (!apiKey || apiKey === 'PLACEHOLDER_API_KEY') {
     throw new Error("Invalid API Key. Please set GEMINI_API_KEY in .env.local");
   }
@@ -101,8 +101,9 @@ export const analyzeImage = async (file: File, prompt: string): Promise<string> 
 
 export const generateVideo = async (prompt: string): Promise<string> => {
   // CRITICAL: Re-create client to pick up user-selected key for Veo
-  // We assume the user has selected a key via the aistudio popup handled in view
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  // We trim the key to avoid copy-paste errors
+  const apiKey = process.env.API_KEY ? process.env.API_KEY.trim() : "";
+  const ai = new GoogleGenAI({ apiKey });
   
   try {
     let operation = await ai.models.generateVideos({
@@ -128,7 +129,7 @@ export const generateVideo = async (prompt: string): Promise<string> => {
     }
 
     // Fetch the actual bytes using the key
-    const response = await fetch(`${downloadLink}&key=${process.env.API_KEY}`);
+    const response = await fetch(`${downloadLink}&key=${apiKey}`);
     if (!response.ok) {
        throw new Error("Failed to download generated video");
     }
