@@ -332,9 +332,15 @@ const App: React.FC = () => {
       <div className="flex flex-col flex-1 min-h-0">
           <div className="pt-6">
             <div className="px-5 mb-3 flex items-center justify-between group">
-              <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+              <button 
+                onClick={() => {
+                  setCurrentView(View.HOME);
+                  setShowMobileSidebar(false);
+                }}
+                className="text-sm font-semibold text-gray-800 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-2 w-full text-left"
+              >
                 Spiels
-              </h3>
+              </button>
             </div>
             
             <div className="border-b border-gray-200 dark:border-gray-700 mx-5 mb-2"></div>

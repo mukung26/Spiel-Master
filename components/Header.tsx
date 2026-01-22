@@ -71,9 +71,8 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl shadow-md flex items-center justify-center text-white">
              <i className="fa-solid fa-layer-group text-lg"></i>
           </div>
-          <div className="flex flex-col">
-            <h1 className="text-xl font-medium text-gray-800 dark:text-gray-100 tracking-tight hidden md:block leading-none">Spiel Master</h1>
-            <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest hidden md:block">v2.0</span>
+          <div>
+            <h1 className="text-xl font-medium text-gray-800 dark:text-gray-100 tracking-tight hidden md:block">Spiel Master</h1>
           </div>
         </div>
       </div>
