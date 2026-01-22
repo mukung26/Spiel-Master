@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
@@ -11,13 +12,11 @@ export const usePresence = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 1. Listen for Auth Changes using v8 style
     const unsubscribeAuth = auth.onAuthStateChanged((user) => {
       setCurrentUser(user);
       setLoading(false);
       
       if (user) {
-        // 2. Setup Presence in Realtime DB
         const userStatusDatabaseRef = database.ref('/status/' + user.uid);
         const connectedRef = database.ref('.info/connected');
 
@@ -26,9 +25,7 @@ export const usePresence = () => {
             return;
           }
 
-          // When we disconnect (close tab), remove this node
           userStatusDatabaseRef.onDisconnect().remove().then(() => {
-            // Set online status
             userStatusDatabaseRef.set({
               uid: user.uid,
               displayName: user.displayName,
@@ -42,7 +39,6 @@ export const usePresence = () => {
       }
     });
 
-    // 3. Listen for ALL active users
     const allUsersRef = database.ref('/status');
     const handleUsersUpdate = (snapshot: firebase.database.DataSnapshot) => {
       const data = snapshot.val();

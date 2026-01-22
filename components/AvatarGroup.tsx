@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { UserProfile } from '../types';
 
@@ -7,7 +8,6 @@ interface AvatarGroupProps {
 }
 
 export const AvatarGroup: React.FC<AvatarGroupProps> = ({ users, max = 4 }) => {
-  // Sort users so those with photos are first (optional aesthetic)
   const sortedUsers = [...users].sort((a, b) => (a.photoURL ? -1 : 1));
   
   const visibleUsers = sortedUsers.slice(0, max);
@@ -18,7 +18,6 @@ export const AvatarGroup: React.FC<AvatarGroupProps> = ({ users, max = 4 }) => {
     return name.charAt(0).toUpperCase();
   };
 
-  // Generate a consistent color based on name
   const stringToColor = (str: string) => {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
@@ -48,10 +47,8 @@ export const AvatarGroup: React.FC<AvatarGroupProps> = ({ users, max = 4 }) => {
               <span>{getInitials(user.displayName)}</span>
             )}
           </div>
-          {/* Status Dot */}
           <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white dark:border-[#202124] rounded-full"></span>
           
-          {/* Tooltip */}
           <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none transition-opacity">
             {user.displayName}
           </div>
@@ -66,7 +63,6 @@ export const AvatarGroup: React.FC<AvatarGroupProps> = ({ users, max = 4 }) => {
         </div>
       )}
       
-      {/* History/Time Icon from screenshot */}
       <div className="ml-4 w-9 h-9 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center text-gray-500 dark:text-gray-400 cursor-pointer transition-colors" title="History">
         <i className="fa-solid fa-clock-rotate-left"></i>
       </div>
