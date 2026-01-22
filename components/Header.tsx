@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { UserProfile } from '../types';
 import { AvatarGroup } from './AvatarGroup';
@@ -70,19 +71,17 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl shadow-md flex items-center justify-center text-white">
              <i className="fa-solid fa-layer-group text-lg"></i>
           </div>
-          <h1 className="text-xl font-medium text-gray-800 dark:text-gray-100 tracking-tight hidden md:block">Spiel Master</h1>
+          <div className="flex flex-col">
+            <h1 className="text-xl font-medium text-gray-800 dark:text-gray-100 tracking-tight hidden md:block leading-none">Spiel Master</h1>
+            <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest hidden md:block">v2.0</span>
+          </div>
         </div>
       </div>
       
       <div className="flex items-center gap-2 md:gap-4">
-        
-        {/* Collaboration Avatars */}
         {activeUsers.length > 0 && <div className="hidden sm:block"><AvatarGroup users={activeUsers} /></div>}
-
         <div className="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-1 hidden sm:block"></div>
-
         <div className="hidden sm:block">{getSyncBadge()}</div>
-        
         <button 
           onClick={toggleDarkMode}
           className="w-10 h-10 rounded-full flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
@@ -90,15 +89,8 @@ export const Header: React.FC<HeaderProps> = ({
         >
           <i className={`fa-solid ${isDarkMode ? 'fa-sun' : 'fa-moon'} text-lg`}></i>
         </button>
-
         {currentUser ? (
           <div className="flex items-center gap-2 pl-2">
-            {isAdmin ? (
-              <span className="hidden sm:block text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wide bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded">Admin</span>
-            ) : (
-              <span className="hidden sm:block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Viewer</span>
-            )}
-            
             <button 
               onClick={onLogout}
               className="group relative w-10 h-10 rounded-full overflow-hidden border-2 border-transparent hover:border-red-200 dark:hover:border-red-900 transition-all"
