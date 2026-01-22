@@ -9,23 +9,18 @@ import { SpielCard } from './components/SpielCard';
 import { AdminModal } from './components/AdminModal';
 import { Toast } from './components/Toast';
 import { Sidebar } from './components/Sidebar';
-import { MessageModal } from './components/MessageModal';
 import { ConfirmationModal } from './components/ConfirmationModal';
 import { LoginModal } from './components/LoginModal';
 import { LandingPage } from './components/LandingPage';
 import { SpielDetailModal } from './components/SpielDetailModal';
 import { ImageModal } from './components/ImageModal';
 import { Loader2, Trash2, ArchiveRestore, MessageSquare, Languages, Bug, X, User, Pin, PlusCircle, LayoutGrid, Pencil, Check, Scissors, Plus } from 'lucide-react';
-// Imported Views directly to maintain single layout
 import { ChatView } from './components/ChatView';
 import { TranslatorView } from './components/TranslatorView';
 import { EditorView } from './components/EditorView';
 import { database, auth, googleProvider } from './firebase';
-
-// Presence Hook
 import { usePresence } from './hooks/usePresence';
 
-// Define Admins here
 const ADMIN_EMAILS = [
   "jerwincruspero611@gmail.com",
   "jcruspero3263@gmail.com",
@@ -35,11 +30,9 @@ const ADMIN_EMAILS = [
 const App: React.FC = () => {
   const { currentUser: firebaseUser, activeUsers, loading: authLoading } = usePresence();
 
-  // Custom Admin State
   const [customAdminUser, setCustomAdminUser] = useState<any | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
 
-  // Determine Effective User (Firebase or Custom Admin)
   const currentUser = useMemo(() => {
     return customAdminUser || firebaseUser;
   }, [firebaseUser, customAdminUser]);
@@ -50,13 +43,10 @@ const App: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | 'All'>('All');
   const [currentView, setCurrentView] = useState<View>(View.HOME);
   
-  // Edit Mode State - Controls category editing/reordering
   const [isEditMode, setIsEditMode] = useState(false);
   
-  // Check Admin Status
   const isAdmin = useMemo(() => {
     if (customAdminUser) {
-      // Only the specific 'Admin' account (mocked as admin@internal) is an admin
       return customAdminUser.email === 'admin@internal';
     }
     return currentUser?.email && ADMIN_EMAILS.includes(currentUser.email);
@@ -74,16 +64,13 @@ const App: React.FC = () => {
   const [syncStatus, setSyncStatus] = useState<'local' | 'synced' | 'cloud' | 'error'>('cloud');
   const [isDarkMode, setIsDarkMode] = useState(false);
   
-  // Sidebar State
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
 
   const [modalConfig, setModalConfig] = useState<{show: boolean, title: string, message: string, type: 'success' | 'error' | 'info'}>({
     show: false, title: '', message: '', type: 'info'
   });
 
-  // Login Handler (Triggers Modal)
   const handleLoginClick = () => {
     setShowLoginModal(true);
   };
@@ -109,7 +96,6 @@ const App: React.FC = () => {
       setCustomAdminUser(mockAdmin);
       showToast("Welcome, Administrator");
     } else {
-      // Standard User Access via Credentials
       const mockUser = {
         uid: 'credential_local_user',
         displayName: 'User',
@@ -136,7 +122,6 @@ const App: React.FC = () => {
     }
   };
 
-  // Load User Spiels from Firebase
   useEffect(() => {
     if (!currentUser?.uid) {
       setUserSpiels([]);
@@ -146,12 +131,10 @@ const App: React.FC = () => {
     setIsGlobalLoading(true);
     const spielsRef = database.ref(`users/${currentUser.uid}/spiels`);
     
-    // Using v8 on() listener
     const handleValueChange = (snapshot: any) => {
       const data = snapshot.val();
       if (data) {
         const loadedSpiels: Spiel[] = Object.values(data);
-        // Sort by 'order' property if available, otherwise by createdAt
         loadedSpiels.sort((a, b) => {
             if (a.order !== undefined && b.order !== undefined) return a.order - b.order;
             return b.createdAt - a.createdAt;
@@ -184,7 +167,6 @@ const App: React.FC = () => {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  // Display only user spiels
   const allSpiels = useMemo(() => {
     return userSpiels;
   }, [userSpiels]);
@@ -209,10 +191,8 @@ const App: React.FC = () => {
   const otherSpiels = useMemo(() => filteredSpiels.filter(s => !s.isPinned), [filteredSpiels]);
 
   const scrollToSpiel = (id: string) => {
-    // Force view to home if clicking a spiel from sidebar
     if (currentView !== View.HOME) {
       setCurrentView(View.HOME);
-      // Small delay to allow render
       setTimeout(() => {
          const element = document.getElementById(id);
          if (element) {
@@ -240,12 +220,10 @@ const App: React.FC = () => {
 
     try {
       if (editingSpiel) {
-        // Update existing user spiel
         const spielRef = database.ref(`users/${currentUser.uid}/spiels/${editingSpiel.id}`);
         await spielRef.set({ ...editingSpiel, ...formData });
         showToast('Template updated');
       } else {
-        // Create new user spiel
         const spielsRef = database.ref(`users/${currentUser.uid}/spiels`);
         const newRef = spielsRef.push();
         const newOrder = userSpiels.length; 
@@ -269,7 +247,6 @@ const App: React.FC = () => {
     }
   };
 
-  // New function for Google Keep style instant updates
   const handleQuickSave = async (id: string, updates: Partial<Spiel>) => {
     if (!currentUser?.uid) return;
     try {
@@ -317,7 +294,6 @@ const App: React.FC = () => {
       await spielRef.remove();
       showToast('Spiel permanently deleted');
     } else {
-      // Soft delete
       const spiel = userSpiels.find(s => s.id === id);
       if (spiel) {
         await spielRef.set({ ...spiel, isDeleted: true });
@@ -378,14 +354,13 @@ const App: React.FC = () => {
          <div className="group flex items-start gap-3 p-3 rounded-xl hover:bg-white dark:hover:bg-slate-800 transition-all border border-transparent hover:border-gray-200 dark:hover:border-slate-700">
            <Bug size={14} className="text-gray-400 group-hover:text-blue-500 mt-0.5" />
            <p className="text-[10px] font-bold text-gray-500 dark:text-gray-500 leading-relaxed group-hover:text-gray-900 dark:group-hover:text-gray-200 transition-colors">
-             If there's a bug or improvements, kindly contact <a href="https://link.seatalk.io/profile/open?seatalk_id=1223036706" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 font-black hover:underline">Kong</a>.
+             If there's a bug or improvements, kindly contact <a href="#" className="text-blue-600 dark:text-blue-400 font-black hover:underline">Kong</a>.
            </p>
          </div>
       </div>
     </>
   );
 
-  // AUTH GUARD: Show Landing Page if not logged in
   if (authLoading) {
     return (
       <div className="h-screen w-full flex items-center justify-center bg-gray-50 dark:bg-slate-900">
@@ -434,7 +409,6 @@ const App: React.FC = () => {
         />
       )}
 
-      {/* Expanded Image Modal */}
       {viewingImage && (
         <ImageModal 
           src={viewingImage} 
@@ -456,7 +430,6 @@ const App: React.FC = () => {
       )}
 
       <div className="flex flex-1 overflow-hidden relative">
-        {/* Desktop Sidebar (Collapsible) */}
         <aside className={`
           bg-white dark:bg-[#202124] border-r border-gray-100 dark:border-gray-800 flex-shrink-0 hidden md:flex flex-col z-10 transition-all duration-300 ease-in-out
           ${isSidebarOpen ? 'w-72 opacity-100' : 'w-0 opacity-0 overflow-hidden border-none'}
@@ -464,7 +437,6 @@ const App: React.FC = () => {
           <SidebarContent />
         </aside>
 
-        {/* Mobile Sidebar Overlay */}
         {showMobileSidebar && (
           <div className="fixed inset-0 z-50 md:hidden flex">
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowMobileSidebar(false)}></div>
@@ -499,9 +471,7 @@ const App: React.FC = () => {
                       />
                       <div className="h-6 w-px bg-gray-300 dark:bg-gray-700 mx-1"></div>
                       
-                      {/* Action Group */}
                       <div className="flex items-center gap-2">
-                        {/* EDIT MODE TOGGLE */}
                         <button 
                           onClick={() => setIsEditMode(!isEditMode)} 
                           className={`flex items-center justify-center w-9 h-9 rounded-lg transition-all ${
@@ -514,7 +484,6 @@ const App: React.FC = () => {
                           {isEditMode ? <Check size={16} /> : <Pencil size={16} />}
                         </button>
                         
-                        {/* TRASH TOGGLE */}
                         <button 
                           onClick={() => setShowTrash(!showTrash)} 
                           className={`flex items-center justify-center w-9 h-9 rounded-lg transition-all ${
@@ -527,7 +496,6 @@ const App: React.FC = () => {
                           {showTrash ? <ArchiveRestore size={16} /> : <Trash2 size={16} />}
                         </button>
 
-                        {/* ADD BUTTON */}
                         {!showTrash && (
                           <button onClick={() => { setEditingSpiel(undefined); setShowAdminModal(true); }} className="flex-shrink-0 bg-blue-600 hover:bg-blue-700 text-white w-9 h-9 rounded-lg shadow-lg flex items-center justify-center transition-all">
                             <PlusCircle size={18} />
@@ -542,7 +510,6 @@ const App: React.FC = () => {
               <div className="flex-1 overflow-y-auto px-4 sm:px-8 scroll-smooth">
                 <div className="w-full pb-24 mx-auto">
                   
-                  {/* EMPTY STATE INTRODUCTION */}
                   {userSpiels.length === 0 && !isGlobalLoading && (
                     <div className="flex flex-col items-center justify-center min-h-[400px] text-center animate-in fade-in slide-in-from-bottom-4">
                         <div className="w-24 h-24 bg-white dark:bg-[#303134] rounded-full flex items-center justify-center shadow-xl mb-6">
@@ -562,7 +529,6 @@ const App: React.FC = () => {
                     </div>
                   )}
                   
-                    {/* PINNED SECTION */}
                     {pinnedSpiels.length > 0 && !showTrash && (
                         <div className="mb-8">
                         <div className="flex items-center gap-2 mb-4 px-1">
@@ -591,14 +557,12 @@ const App: React.FC = () => {
                         </div>
                     )}
 
-                    {/* OTHERS SECTION */}
                     {pinnedSpiels.length > 0 && !showTrash && otherSpiels.length > 0 && (
                         <div className="flex items-center gap-2 mb-4 px-1">
                             <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Others</span>
                         </div>
                     )}
 
-                    {/* Responsive Grid Layout */}
                     {userSpiels.length > 0 && (
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
                             {(showTrash ? filteredSpiels : otherSpiels).map((spiel) => (
