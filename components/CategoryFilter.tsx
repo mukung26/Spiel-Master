@@ -1,8 +1,7 @@
 
 import React from 'react';
-import { useSortable } from '@dnd-kit/sortable';
+import { useSortable, SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable';
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { GripVertical } from 'lucide-react';
 
