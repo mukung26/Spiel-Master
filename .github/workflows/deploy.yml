@@ -4,9 +4,7 @@ name: Build and Deploy
 on:
   push:
     branches:
-      - main
       - gh-pages
-      - master
   workflow_dispatch:
 
 permissions:
@@ -26,18 +24,17 @@ jobs:
           cache: 'npm'
 
       - name: Install Dependencies
-        # Using npm install instead of ci to be safer if package-lock is desynced
         run: npm install
 
       - name: Build Project
         run: npm run build
         env:
-          # The build uses the fallback key in vite.config.ts, but we map secrets if available
           API_KEY: ${{ secrets.API_KEY }}
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: dist
-          # Deploying to a specific build branch to avoid overwriting your source code
           branch: site-deployment
+          force: true
+          clean: true
