@@ -5,11 +5,11 @@ import path from 'path';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
-  // Force use of the hardcoded key if env var is missing during GitHub Action build
   const apiKey = env.GEMINI_API_KEY || env.API_KEY || 'AIzaSyC7iXvQTgtD-0og2bRGcPnafxHBZ55bJjM';
 
   return {
-    base: './',
+    // IMPORTANT: This must match your repository name for GitHub Pages
+    base: '/Spiel-Master/', 
     plugins: [react()],
     resolve: {
       alias: {
@@ -26,11 +26,7 @@ export default defineConfig(({ mode }) => {
     build: {
       outDir: 'dist',
       emptyOutDir: true,
-      sourcemap: false,
-      commonjsOptions: {
-        include: [/node_modules/],
-        transformMixedEsModules: true
-      }
+      sourcemap: false
     }
   };
 });
