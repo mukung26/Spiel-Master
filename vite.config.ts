@@ -5,6 +5,9 @@ import path from 'path';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
+  // Use the key from environment or the fallback provided in .env.local
+  const apiKey = env.GEMINI_API_KEY || env.API_KEY || 'AIzaSyC7iXvQTgtD-0og2bRGcPnafxHBZ55bJjM';
+
   return {
     base: './',
     plugins: [react()],
@@ -17,9 +20,8 @@ export default defineConfig(({ mode }) => {
       include: ['@dnd-kit/core', '@dnd-kit/sortable', '@dnd-kit/utilities', 'lucide-react']
     },
     define: {
-      'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY || env.API_KEY || ''),
-      'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY || env.API_KEY || ''),
-      'process.env': {}
+      'process.env.API_KEY': JSON.stringify(apiKey),
+      'process.env.GEMINI_API_KEY': JSON.stringify(apiKey),
     },
     build: {
       outDir: 'dist',
