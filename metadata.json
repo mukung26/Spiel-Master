@@ -1,0 +1,5 @@
+{
+  "name": "Spiel-Master",
+  "description": "A comprehensive TTRPG Game Master companion featuring an Initiative Tracker, Dice Roller, and AI-powered NPC & Plot generation using Gemini.",
+  "requestFramePermissions": []
+}
