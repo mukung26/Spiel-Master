@@ -3,33 +3,6 @@
 
 This guide explains how to run this project locally and deploy it to GitHub Pages using your portable Node.js setup.
 
-## 📁 Essential Files List
-
-When uploading to GitHub, **ONLY** these files/folders are needed. You can delete `node_modules`, `dist`, and logs.
-
-**Folders to Keep:**
-*   `.github` (Contains deployment scripts)
-*   `components`
-*   `hooks`
-*   `services`
-*   `utils`
-
-**Files to Keep:**
-*   `App.tsx`
-*   `constants.tsx`
-*   `firebase.ts`
-*   `index.html`
-*   `index.tsx`
-*   `metadata.json`
-*   `package.json`
-*   `tsconfig.json`
-*   `types.ts`
-*   `vite.config.ts`
-*   `.gitignore`
-*   `README.md`
-
----
-
 ## 🚀 Prerequisites (CMD Setup)
 
 Since you are using a portable version of Node.js, set your path first:
