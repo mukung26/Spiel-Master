@@ -1,69 +1,61 @@
 
 # Spiel Master - Deployment Guide
 
-This guide explains how to run this project locally and deploy it to GitHub Pages using your portable Node.js setup.
+This guide explains how to run this project locally and deploy it to GitHub Pages.
 
-## 🚀 Prerequisites (CMD Setup)
+## 🚀 Prerequisites
 
-Since you are using a portable version of Node.js, set your path first:
-
-1. Open **VS Code**.
-2. Open **Terminal** (CMD).
-3. Run:
-   ```cmd
-   set PATH=C:\Users\jcruspero\Documents\node-v24.13.0-win-x64;%PATH%
-   ```
-
----
+1.  **Node.js**: Ensure Node.js is installed and in your PATH.
+2.  **API Key**: You need a valid Google Gemini API Key.
 
 ## 🛠️ Local Installation
 
-1. **Install Dependencies**
-   ```cmd
-   npm install
-   ```
+1.  **Install Dependencies**
+    ```cmd
+    npm install
+    ```
+    *Note: If you encounter errors about `gh-pages`, run: `npm install gh-pages --save-dev`*
 
-2. **Setup Environment Keys**
-   - Create a file named `.env.local` in the root folder.
-   - Add your Gemini API Key inside it:
-     ```
-     GEMINI_API_KEY=your_actual_api_key_here
-     ```
+2.  **Setup Environment**
+    Create a `.env.local` file in the root:
+    ```
+    GEMINI_API_KEY=your_api_key_here
+    ```
 
-3. **Run the App**
-   ```cmd
-   npm run dev
-   ```
-
----
+3.  **Run Locally**
+    ```cmd
+    npm run dev
+    ```
 
 ## 🌐 Deploying to GitHub Pages
 
-### Step 1: Push Code
-In your VS Code Terminal (CMD):
+### Option 1: Manual Deploy (from PC)
+If you want to run `npm run deploy` from your computer:
 
-```cmd
-git init
-git add .
-git commit -m "Initial commit"
-git branch -M main
-git remote add origin https://github.com/YOUR_GITHUB_USERNAME/Spiel-Master.git
-git push -u origin main
-```
+1.  **Install Deploy Tool** (One-time setup):
+    ```cmd
+    npm install gh-pages --save-dev
+    ```
 
-### Step 2: Configure API Key (IMPORTANT)
-Since `.env.local` is ignored for security, you must add the key to GitHub Secrets manually.
+2.  **Deploy**:
+    ```cmd
+    npm run deploy
+    ```
+    This will build the project and push the `dist` folder to the `gh-pages` branch.
 
-1. Go to your Repository on GitHub.
-2. Click **Settings** > **Secrets and variables** > **Actions**.
-3. Click **New repository secret**.
-4. **Name:** `API_KEY`
-5. **Secret:** Paste your Gemini API Key (starts with `AIza...`).
-6. Click **Add secret**.
+### Option 2: Automatic Deploy (GitHub Actions)
+This is the recommended way as it keeps your API keys secure.
 
-### Step 3: Trigger Deployment
-1. Go to **Actions** tab.
-2. If the build failed previously, click on it and select **Re-run jobs**.
-3. Once green, go to **Settings** > **Pages**.
-4. Set Branch to `gh-pages` and folder to `/ (root)`.
-5. Save.
+1.  **Push Code**:
+    ```cmd
+    git add .
+    git commit -m "Update"
+    git push origin main
+    ```
+
+2.  **Configure Secret**:
+    Go to GitHub Repo -> Settings -> Secrets and variables -> Actions.
+    Add `API_KEY` with your Gemini Key.
+
+3.  **Check Actions**:
+    Go to the "Actions" tab in GitHub to see the build progress.

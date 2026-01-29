@@ -184,17 +184,20 @@ const App: React.FC = () => {
 
   const handleLogout = async () => {
     try {
+      // 1. Reset View FIRST to ensure state is queued before unmount/re-render
+      setCurrentView(View.HOME);
+
+      // 2. Clear Auth
       if (localUser) {
         setLocalUser(null);
       } else {
         await auth.signOut();
       }
+      
+      // 3. Reset Local State
       setUserSpiels([]);
       setSystemRole(null);
       authSyncRef.current = null;
-      
-      // CRITICAL FIX: Reset View to HOME (Spiels) on logout
-      setCurrentView(View.HOME); 
       
       showToast("Logged out");
     } catch (error) {
