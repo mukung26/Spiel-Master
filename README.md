@@ -60,7 +60,7 @@ This is the recommended way as it keeps your API keys secure.
 3.  **Check Actions**:
     Go to the "Actions" tab in GitHub to see the build progress.
 
-
+# set PATH=C:\Users\jcruspero\Documents\node-v24.13.0-win-x64;%PATH%
 
 # npm install
 
