@@ -17,9 +17,13 @@ const fileToGenerativePart = async (file: File) => {
 };
 
 const getClient = () => {
-  const apiKey = process.env.API_KEY;
+  // Vite replaces these with string literals at build time.
+  // We check both common names to be safe.
+  const apiKey = process.env.API_KEY || process.env.GEMINI_API_KEY;
+  
   if (!apiKey) {
-    throw new Error("API_KEY environment variable is not defined.");
+    console.error("Critical Error: API Key is missing. Please check vite.config.ts and your environment variables.");
+    throw new Error("API_KEY environment variable is not defined. The AI features will not work.");
   }
   return new GoogleGenAI({ apiKey });
 };
