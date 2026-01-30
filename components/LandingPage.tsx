@@ -13,8 +13,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
         
         {/* Version Badge - UPDATED */}
         <div className="absolute top-4 right-4 flex items-center gap-1.5 bg-black/20 px-2 py-1 rounded-full border border-white/10">
-           <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
-           <span className="text-[9px] font-bold text-white/80 uppercase tracking-widest">v3.0 Manual</span>
+           <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+           <span className="text-[9px] font-bold text-white/80 uppercase tracking-widest">v3.1 Config Fix</span>
         </div>
 
         <div className="w-20 h-20 bg-white rounded-2xl mx-auto mb-6 flex items-center justify-center shadow-lg mt-4">

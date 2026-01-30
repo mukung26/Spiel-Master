@@ -20,9 +20,9 @@ const getClient = () => {
   // Vite replaces 'process.env.API_KEY' with the actual string value during build
   const apiKey = process.env.API_KEY || process.env.GEMINI_API_KEY;
   
-  if (!apiKey) {
-    console.error("Critical Error: API Key is missing. Please check vite.config.ts and your environment variables.");
-    throw new Error("API_KEY environment variable is not defined. The AI features will not work.");
+  if (!apiKey || apiKey.includes('PASTE_YOUR_NEW_KEY')) {
+    console.error("Critical Error: API Key is missing or invalid.");
+    throw new Error("Missing API Key. Please update your .env file.");
   }
   return new GoogleGenAI({ apiKey });
 };
@@ -64,6 +64,12 @@ export const generateText = async (
     return response.text || "";
   } catch (error: any) {
     console.error("Gemini Error:", error);
+    
+    const msg = error.message || JSON.stringify(error);
+    if (msg.includes("API key expired") || msg.includes("API_KEY_INVALID")) {
+        return "⚠️ SYSTEM ERROR: The Google API Key has expired. Please generate a new key at aistudio.google.com and update the website configuration.";
+    }
+    
     return `Error: ${error.message || "I encountered an issue connecting to the AI service."}`;
   }
 };
@@ -89,6 +95,10 @@ export const translateText = async (text: string, targetLang: string): Promise<s
     return response.text || "Translation failed.";
   } catch (error: any) {
     console.error("Translation Error:", error);
+    const msg = error.message || "";
+    if (msg.includes("API key expired")) {
+        return "Error: API Key Expired. Please update config.";
+    }
     throw new Error(error.message || "Translation failed");
   }
 };
