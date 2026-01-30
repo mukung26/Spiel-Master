@@ -59,3 +59,11 @@ This is the recommended way as it keeps your API keys secure.
 
 3.  **Check Actions**:
     Go to the "Actions" tab in GitHub to see the build progress.
+
+
+
+# npm install
+
+# npm run build
+
+# npx gh-pages -d dist
