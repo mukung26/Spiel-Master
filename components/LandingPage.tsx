@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ShoppingBag, Lock, Bug } from 'lucide-react';
+import { ShoppingBag, Lock, Bug, Radio } from 'lucide-react';
 
 interface LandingPageProps {
   onLoginClick: () => void;
@@ -9,8 +9,15 @@ interface LandingPageProps {
 export const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-500 via-orange-600 to-red-600 flex items-center justify-center p-4">
-      <div className="bg-white/10 backdrop-blur-md border border-white/20 p-8 rounded-3xl w-full max-w-md text-center shadow-2xl animate-fade-in">
-        <div className="w-20 h-20 bg-white rounded-2xl mx-auto mb-6 flex items-center justify-center shadow-lg">
+      <div className="bg-white/10 backdrop-blur-md border border-white/20 p-8 rounded-3xl w-full max-w-md text-center shadow-2xl animate-fade-in relative overflow-hidden">
+        
+        {/* Version Badge */}
+        <div className="absolute top-4 right-4 flex items-center gap-1.5 bg-black/20 px-2 py-1 rounded-full border border-white/10">
+           <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+           <span className="text-[9px] font-bold text-white/80 uppercase tracking-widest">v2.5 Live</span>
+        </div>
+
+        <div className="w-20 h-20 bg-white rounded-2xl mx-auto mb-6 flex items-center justify-center shadow-lg mt-4">
           <ShoppingBag className="text-orange-600" size={40} />
         </div>
         
