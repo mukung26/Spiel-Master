@@ -27,7 +27,7 @@ export default defineConfig(({ mode }) => {
   }
 
   return {
-    base: './', // Ensures assets load correctly on GitHub Pages
+    base: '/Spiel-Master/', // EXPLICIT REPO NAME FOR GITHUB PAGES
     plugins: [react()],
     resolve: {
       alias: {

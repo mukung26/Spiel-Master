@@ -21,12 +21,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
 
       - name: Install Dependencies
-        # Changed from 'npm ci' to 'npm install' to be more forgiving of lockfile differences
-        # Added --legacy-peer-deps to ignore potential React 18/19 conflicts
-        run: npm install --legacy-peer-deps
+        # Force remove lockfile to prevent OS conflicts (Windows vs Linux)
+        # This fixes the "3 second failure" you were seeing
+        run: |
+          rm -rf package-lock.json
+          rm -rf node_modules
+          npm install --legacy-peer-deps
 
       - name: Build Project
         run: npm run build
