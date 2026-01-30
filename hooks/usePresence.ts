@@ -25,7 +25,9 @@ export const usePresence = () => {
             return;
           }
 
+          // On disconnect, remove the user (standard presence behavior)
           userStatusDatabaseRef.onDisconnect().remove().then(() => {
+            // Initial Set: Online
             userStatusDatabaseRef.set({
               uid: user.uid,
               displayName: user.displayName,
@@ -36,6 +38,29 @@ export const usePresence = () => {
             });
           });
         });
+
+        // --- VISIBILITY LOGIC ---
+        // If tab is hidden, set status to 'idle' (grey). If visible, set to 'online'.
+        const handleVisibilityChange = () => {
+          if (document.visibilityState === 'hidden') {
+            userStatusDatabaseRef.update({ status: 'idle' });
+          } else {
+            userStatusDatabaseRef.update({ 
+              status: 'online',
+              lastSeen: firebase.database.ServerValue.TIMESTAMP
+            });
+          }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        // Cleanup listener on unmount
+        return () => {
+           document.removeEventListener('visibilitychange', handleVisibilityChange);
+           connectedRef.off();
+           // Optional: Remove status on clean unmount (e.g. logout)
+           // userStatusDatabaseRef.remove(); 
+        };
       }
     });
 

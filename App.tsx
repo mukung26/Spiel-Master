@@ -11,7 +11,6 @@ import { Toast } from './components/Toast';
 import { Sidebar } from './components/Sidebar';
 import { ConfirmationModal } from './components/ConfirmationModal';
 import { LoginModal } from './components/LoginModal';
-import { LandingPage } from './components/LandingPage';
 import { SpielDetailModal } from './components/SpielDetailModal';
 import { ImageModal } from './components/ImageModal';
 import { InputModal } from './components/InputModal';
@@ -21,6 +20,8 @@ import { ChatView } from './components/ChatView';
 import { TranslatorView } from './components/TranslatorView';
 import { EditorView } from './components/EditorView';
 import { AdminUserManagement } from './components/AdminUserManagement';
+import { VideoView } from './components/VideoView';
+import { LiveView } from './components/LiveView';
 import { database, auth, googleProvider } from './firebase';
 import { usePresence } from './hooks/usePresence';
 
@@ -633,18 +634,16 @@ const App: React.FC = () => {
     );
   }
 
-  // Bypass Landing Page if User is Logged In (which is default now)
+  // DIRECT LOGIN VIEW for Unauthenticated Users
   if (!currentUser) {
     return (
       <>
-        <LandingPage onLoginClick={() => setShowLoginModal(true)} />
-        {showLoginModal && (
-          <LoginModal 
-            onClose={() => setShowLoginModal(false)} 
+        <LoginModal 
+            onClose={() => {}} 
             onGoogleLogin={handleGoogleLogin}
             onAdminLogin={handleLocalLogin}
-          />
-        )}
+            isLanding={true}
+        />
         {toastMessage && <Toast message={toastMessage} />}
       </>
     );
