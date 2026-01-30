@@ -66,26 +66,8 @@ export const TranslatorView: React.FC<TranslatorViewProps> = ({ isAdmin = false 
   return (
     <div className="p-6 md:p-12 max-w-6xl mx-auto h-full flex flex-col animate-fade-in overflow-y-auto relative">
       
-      {/* Maintenance Overlay for non-admins */}
-      {!isAdmin && (
-        <div className="absolute inset-0 z-50 bg-white/60 dark:bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#1e1e1e] border border-gray-200 dark:border-gray-700 rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center transform scale-100">
-             <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6 text-gray-400 dark:text-gray-500">
-                <Lock size={32} />
-             </div>
-             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Coming Soon</h3>
-             <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-6">
-               This feature is currently under maintenance or in development. Please check back later or contact an administrator.
-             </p>
-             <div className="flex justify-center">
-               <span className="px-3 py-1 bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-500 rounded-full text-[10px] font-bold uppercase tracking-widest">Under Maintenance</span>
-             </div>
-          </div>
-        </div>
-      )}
-
       {/* Header Section */}
-      <div className={`mb-8 text-center md:text-left ${!isAdmin ? 'blur-sm opacity-50' : ''}`}>
+      <div className="mb-8 text-center md:text-left">
         <div className="flex items-center gap-2 mb-2 justify-center md:justify-start">
            <ShieldCheck className="text-orange-500" size={20} />
            <span className="text-xs font-black text-orange-500 uppercase tracking-widest">AI Intelligence Tool</span>
@@ -96,7 +78,7 @@ export const TranslatorView: React.FC<TranslatorViewProps> = ({ isAdmin = false 
         </p>
       </div>
 
-      <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 flex-1 min-h-[400px] ${!isAdmin ? 'blur-sm opacity-50' : ''}`}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1 min-h-[400px]">
         {/* Source Side Card */}
         <div className="group relative bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-6 flex flex-col transition-all shadow-xl overflow-hidden">
           <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500 to-indigo-700 opacity-5 blur-2xl rounded-full -mr-10 -mt-10`}></div>
@@ -156,7 +138,7 @@ export const TranslatorView: React.FC<TranslatorViewProps> = ({ isAdmin = false 
         </div>
       </div>
 
-      <div className={`mt-6 bg-white/50 dark:bg-slate-800/50 p-6 rounded-2xl border border-gray-200 dark:border-slate-700 flex flex-wrap items-center justify-between gap-6 shadow-lg ${!isAdmin ? 'blur-sm opacity-50' : ''}`}>
+      <div className="mt-6 bg-white/50 dark:bg-slate-800/50 p-6 rounded-2xl border border-gray-200 dark:border-slate-700 flex flex-wrap items-center justify-between gap-6 shadow-lg">
         <div className="flex items-center gap-8">
           <div className="flex flex-col">
             <span className="text-[9px] font-black text-gray-500 dark:text-slate-500 uppercase tracking-widest mb-1">Target Language</span>

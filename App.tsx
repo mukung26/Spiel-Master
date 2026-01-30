@@ -536,14 +536,14 @@ const App: React.FC = () => {
                 className={`w-full text-left px-3 py-2 text-xs font-bold rounded-lg flex items-center gap-2 ${currentView === View.CHAT ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
             >
                 <MessageSquare size={14} className={currentView === View.CHAT ? "text-blue-500" : "text-gray-400"} /> 
-                <span className={!isAdmin ? "line-through decoration-gray-400 opacity-70" : ""}>Chat AI</span>
+                <span>Chat AI</span>
             </button>
             <button 
                 onClick={() => setCurrentView(View.TRANSLATOR)} 
                 className={`w-full text-left px-3 py-2 text-xs font-bold rounded-lg flex items-center gap-2 ${currentView === View.TRANSLATOR ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
             >
                 <Languages size={14} className={currentView === View.TRANSLATOR ? "text-orange-500" : "text-gray-400"} /> 
-                <span className={!isAdmin ? "line-through decoration-gray-400 opacity-70" : ""}>Translator AI</span>
+                <span>Translator AI</span>
             </button>
            <button 
             onClick={() => setCurrentView(View.EDITOR)} 

@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { generateText } from '../services/geminiService';
 import { ChatMessage } from '../types';
-import { Send, Loader2, Bot, Trash2, Settings, Sparkles, X, Copy, Sparkle, Lock } from 'lucide-react';
+import { Send, Loader2, Bot, Trash2, Settings, Sparkles, X, Copy, Sparkle, Lock, Check } from 'lucide-react';
 import { database } from '../firebase';
 
 interface CustomInstructions {
@@ -15,6 +15,123 @@ interface ChatViewProps {
   user?: any;
   isAdmin?: boolean;
 }
+
+// --- Helper Components ---
+
+const FormattedText = ({ text }: { text: string }) => {
+  if (!text) return null;
+  
+  // Split by newlines to handle paragraphs
+  const lines = text.split('\n');
+  
+  return (
+    <div className="space-y-2">
+      {lines.map((line, i) => {
+        if (!line.trim()) return <div key={i} className="h-1"></div>;
+        
+        // Simple Bold Parser: **text**
+        const parts = line.split(/(\*\*.*?\*\*)/g);
+        return (
+          <p key={i} className="leading-relaxed break-words whitespace-pre-wrap">
+            {parts.map((part, j) => {
+              if (part.startsWith('**') && part.endsWith('**')) {
+                return <strong key={j} className="font-bold text-gray-900 dark:text-white">{part.slice(2, -2)}</strong>;
+              }
+              return <span key={j}>{part}</span>;
+            })}
+          </p>
+        );
+      })}
+    </div>
+  );
+};
+
+const CopyButton = ({ text }: { text: string }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <button 
+        onClick={handleCopy} 
+        className="text-gray-400 hover:text-gray-900 dark:text-slate-500 dark:hover:text-white transition-colors"
+        title="Copy text"
+    >
+        {copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
+    </button>
+  );
+};
+
+const DualColumnMessage = ({ text }: { text: string }) => {
+    let content = { english: text, portuguese: '' };
+    let isSplit = false;
+
+    try {
+      // Robust JSON extraction: handles markdown code blocks or plain text JSON
+      let cleanText = text.trim();
+      const codeBlockRegex = /```(?:json)?\s*([\s\S]*?)\s*```/;
+      const match = cleanText.match(codeBlockRegex);
+      if (match) {
+        cleanText = match[1];
+      }
+      
+      // Try parsing
+      const parsed = JSON.parse(cleanText);
+      if (parsed.english && parsed.portuguese) {
+        content = parsed;
+        isSplit = true;
+      }
+    } catch (e) {
+      // Not JSON, fall back to standard text rendering
+    }
+
+    if (isSplit) {
+        return (
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 w-full mt-2">
+                {/* English Column */}
+                <div className="flex flex-col gap-2 p-5 bg-white dark:bg-black/20 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm">
+                    <div className="flex items-center justify-between border-b border-gray-100 dark:border-white/5 pb-2 mb-1">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400 flex items-center gap-2">
+                           <img src="https://flagcdn.com/w20/us.png" alt="US" className="w-4 h-3 rounded-sm object-cover opacity-80" />
+                           English Response
+                        </span>
+                        <CopyButton text={content.english} />
+                    </div>
+                    <div className="text-[15px] text-gray-800 dark:text-gray-200">
+                       <FormattedText text={content.english} />
+                    </div>
+                </div>
+
+                {/* Portuguese Column */}
+                <div className="flex flex-col gap-2 p-5 bg-white dark:bg-black/20 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm">
+                    <div className="flex items-center justify-between border-b border-gray-100 dark:border-white/5 pb-2 mb-1">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-green-600 dark:text-green-400 flex items-center gap-2">
+                           <img src="https://flagcdn.com/w20/br.png" alt="BR" className="w-4 h-3 rounded-sm object-cover opacity-80" />
+                           Portuguese Response
+                        </span>
+                        <CopyButton text={content.portuguese} />
+                    </div>
+                    <div className="text-[15px] text-gray-800 dark:text-gray-200">
+                       <FormattedText text={content.portuguese} />
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // Standard Message (Formatted)
+    return (
+        <div className="w-full text-[15px] text-gray-800 dark:text-gray-200">
+            <FormattedText text={text} />
+        </div>
+    );
+};
+
+// --- Main ChatView Component ---
 
 export const ChatView: React.FC<ChatViewProps> = ({ user, isAdmin = false }) => {
   const [input, setInput] = useState('');
@@ -227,91 +344,11 @@ export const ChatView: React.FC<ChatViewProps> = ({ user, isAdmin = false }) => 
     }
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-  };
-
-  const DualColumnMessage = ({ text }: { text: string }) => {
-    let content = { english: text, portuguese: '' };
-    try {
-      const parsed = JSON.parse(text);
-      if (parsed.english || parsed.portuguese) {
-        content = parsed;
-      }
-    } catch (e) {
-      // If parsing fails, treat raw text as English
-    }
-
-    const cleanText = (t: string) => t?.replace(/\*\*/g, '').replace(/<br>/g, '\n').replace(/`/g, '') || '';
-
-    return (
-      <div className="w-full">
-        {content.portuguese ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="flex flex-col gap-2">
-                    <div className="flex items-center justify-between">
-                        <span className="text-xs font-medium text-gray-500 dark:text-slate-300">English Response</span>
-                        <button 
-                            onClick={() => copyToClipboard(cleanText(content.english))} 
-                            className="text-gray-400 hover:text-gray-900 dark:text-slate-500 dark:hover:text-white transition-colors"
-                            title="Copy English"
-                        >
-                            <Copy size={14} />
-                        </button>
-                    </div>
-                    <p className="text-[15px] leading-relaxed text-gray-800 dark:text-slate-200 whitespace-pre-wrap font-normal">
-                        {cleanText(content.english)}
-                    </p>
-                </div>
-
-                <div className="flex flex-col gap-2">
-                    <div className="flex items-center justify-between">
-                        <span className="text-xs font-medium text-gray-500 dark:text-slate-300">Portuguese Response</span>
-                        <button 
-                            onClick={() => copyToClipboard(cleanText(content.portuguese))} 
-                            className="text-gray-400 hover:text-gray-900 dark:text-slate-500 dark:hover:text-white transition-colors"
-                            title="Copy Portuguese"
-                        >
-                            <Copy size={14} />
-                        </button>
-                    </div>
-                    <p className="text-[15px] leading-relaxed text-gray-800 dark:text-slate-200 whitespace-pre-wrap font-normal">
-                        {cleanText(content.portuguese)}
-                    </p>
-                </div>
-            </div>
-        ) : (
-            <p className="text-[15px] leading-relaxed text-gray-800 dark:text-slate-200 whitespace-pre-wrap font-normal">
-                {cleanText(content.english)}
-            </p>
-        )}
-      </div>
-    );
-  };
-
   return (
     <div className="h-full flex flex-col bg-[#f0f2f5] dark:bg-[#202124] text-gray-900 dark:text-white overflow-hidden relative font-sans animate-fade-in transition-colors duration-300">
       
-      {/* Maintenance Overlay for non-admins */}
-      {!isAdmin && (
-        <div className="absolute inset-0 z-50 bg-white/60 dark:bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#1e1e1e] border border-gray-200 dark:border-gray-700 rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center transform scale-100">
-             <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6 text-gray-400 dark:text-gray-500">
-                <Lock size={32} />
-             </div>
-             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Coming Soon</h3>
-             <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-6">
-               This feature is currently under maintenance or in development. Please check back later or contact an administrator.
-             </p>
-             <div className="flex justify-center">
-               <span className="px-3 py-1 bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-500 rounded-full text-[10px] font-bold uppercase tracking-widest">Under Maintenance</span>
-             </div>
-          </div>
-        </div>
-      )}
-
       {/* Messages Area */}
-      <div className={`flex-1 overflow-y-auto px-4 md:px-0 py-6 custom-scrollbar scroll-smooth ${!isAdmin ? 'blur-sm opacity-50 overflow-hidden' : ''}`}>
+      <div className="flex-1 overflow-y-auto px-4 md:px-0 py-6 custom-scrollbar scroll-smooth">
         <div className="max-w-4xl mx-auto space-y-8">
             
             {messages.length === 0 && (
@@ -330,7 +367,7 @@ export const ChatView: React.FC<ChatViewProps> = ({ user, isAdmin = false }) => 
                 <div key={msg.id} className={`group animate-in fade-in slide-in-from-bottom-2 duration-500`}>
                     {msg.role === 'user' ? (
                         <div className="flex justify-end mb-6">
-                            <div className="bg-white dark:bg-[#282a2c] text-gray-800 dark:text-white px-5 py-3.5 rounded-3xl rounded-br-sm max-w-[80%] shadow-sm border border-gray-200 dark:border-transparent text-[15px] leading-relaxed whitespace-pre-wrap">
+                            <div className="bg-white dark:bg-[#282a2c] text-gray-800 dark:text-white px-5 py-3.5 rounded-3xl rounded-br-sm max-w-[80%] shadow-sm border border-gray-200 dark:border-transparent text-[15px] leading-relaxed whitespace-pre-wrap break-words">
                                 {msg.text}
                             </div>
                         </div>
@@ -368,7 +405,7 @@ export const ChatView: React.FC<ChatViewProps> = ({ user, isAdmin = false }) => 
       </div>
 
       {/* Input Area */}
-      <div className={`p-4 md:p-6 bg-[#f0f2f5] dark:bg-[#202124] transition-colors duration-300 ${!isAdmin ? 'blur-sm opacity-50 pointer-events-none' : ''}`}>
+      <div className="p-4 md:p-6 bg-[#f0f2f5] dark:bg-[#202124] transition-colors duration-300">
         <div className="max-w-3xl mx-auto">
             <div className="relative bg-white dark:bg-[#1e1f20] rounded-3xl border border-gray-200 dark:border-transparent focus-within:ring-2 focus-within:ring-blue-100 dark:focus-within:bg-[#282a2c] dark:focus-within:ring-0 shadow-sm transition-all">
                 

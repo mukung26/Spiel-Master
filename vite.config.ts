@@ -9,21 +9,40 @@ export default defineConfig(({ mode }) => {
   // Load env file based on `mode` in the current working directory.
   const env = loadEnv(mode, root, '');
   
-  // PRIORITY ORDER:
-  // 1. System Environment (GitHub Actions Secrets)
-  // 2. .env file variables
-  const apiKey = process.env.GEMINI_API_KEY || 
-                 process.env.API_KEY || 
-                 env.GEMINI_API_KEY || 
-                 env.API_KEY;
+  // LOGIC: Aggregate all API Keys into a pool
+  const keyPool = new Set<string>();
+  
+  // Helper to scan an object for keys
+  const scanForKeys = (source: Record<string, string | undefined>) => {
+    Object.keys(source).forEach(key => {
+      // Look for API_KEY, API_KEY_2, GEMINI_API_KEY, etc.
+      if (key.startsWith('API_KEY') || key.startsWith('GEMINI_API_KEY')) {
+        const val = source[key];
+        if (val) {
+          // Support comma-separated values in a single variable
+          val.split(',').forEach(v => {
+            const clean = v.trim();
+            // Filter out placeholders
+            if (clean && !clean.includes('PASTE_YOUR') && clean.length > 10) {
+              keyPool.add(clean);
+            }
+          });
+        }
+      }
+    });
+  };
 
-  if (apiKey) {
-    // Mask key in logs for security
-    const maskedKey = apiKey.substring(0, 4) + '...';
-    console.log(`\x1b[32m[Vite Config] ✅ API Key detected (${maskedKey}).\x1b[0m`);
+  // 1. Scan process.env (System Variables / Secrets)
+  scanForKeys(process.env);
+  // 2. Scan .env file loaded by Vite
+  scanForKeys(env);
+
+  const apiKeys = Array.from(keyPool);
+
+  if (apiKeys.length > 0) {
+    console.log(`\x1b[32m[Vite Config] ✅ Loaded ${apiKeys.length} API Key(s) for rotation pool.\x1b[0m`);
   } else {
-    console.warn("\x1b[33m[Vite Config] ⚠️  WARNING: No API Key found. AI features will fail.\x1b[0m");
-    console.warn("\x1b[33m[Vite Config] Please create a .env file with API_KEY=your_key_here\x1b[0m");
+    console.warn("\x1b[33m[Vite Config] ⚠️  WARNING: No valid API Keys found. AI features will fail.\x1b[0m");
   }
 
   return {
@@ -35,9 +54,10 @@ export default defineConfig(({ mode }) => {
       }
     },
     define: {
-      // This injects the key into the browser code during the build
-      'process.env.API_KEY': JSON.stringify(apiKey),
-      'process.env.GEMINI_API_KEY': JSON.stringify(apiKey),
+      // Inject the pool of keys
+      'process.env.API_KEYS': JSON.stringify(apiKeys),
+      // Fallback for legacy code relying on single key
+      'process.env.API_KEY': JSON.stringify(apiKeys[0] || ''),
     },
     build: {
       outDir: 'dist',

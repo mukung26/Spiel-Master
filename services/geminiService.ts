@@ -2,6 +2,73 @@
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 import { SOP_CONTEXT } from "../constants";
 
+// --- KEY ROTATION SYSTEM ---
+// Retrieve keys injected by Vite
+const API_KEYS: string[] = (process.env.API_KEYS as unknown as string[]) || [];
+if (API_KEYS.length === 0 && process.env.API_KEY) {
+    API_KEYS.push(process.env.API_KEY);
+}
+
+let currentKeyIndex = 0;
+
+/**
+ * Rotates to the next available API Key in the pool.
+ */
+const rotateKey = () => {
+    if (API_KEYS.length <= 1) return;
+    currentKeyIndex = (currentKeyIndex + 1) % API_KEYS.length;
+    console.warn(`🔄 Switching to API Key Index: ${currentKeyIndex}`);
+};
+
+/**
+ * Gets a client instance using the current active key.
+ */
+const getClient = () => {
+  const key = API_KEYS[currentKeyIndex];
+  if (!key || key.includes('PASTE_YOUR')) {
+    console.error("Critical Error: No valid API Key available.");
+    throw new Error("Missing API Key. Please check your configuration.");
+  }
+  return new GoogleGenAI({ apiKey: key });
+};
+
+/**
+ * Wrapper to execute AI operations with auto-retry and key rotation.
+ */
+const executeWithRetry = async <T>(operation: (client: GoogleGenAI) => Promise<T>): Promise<T> => {
+    let attempts = 0;
+    // We try at least as many times as we have keys to give every key a chance
+    const maxAttempts = Math.max(API_KEYS.length, 1);
+
+    while (attempts < maxAttempts) {
+        try {
+            const client = getClient();
+            return await operation(client);
+        } catch (error: any) {
+            attempts++;
+            const msg = (error.message || '').toLowerCase();
+            
+            // Detect specific errors that warrant a key switch
+            // 429: Quota Exceeded / Too Many Requests
+            // 403: Permission Denied / Key Invalid
+            // "expired": Key expired
+            const isAuthOrQuotaError = msg.includes('429') || msg.includes('403') || msg.includes('expired') || msg.includes('key') || msg.includes('quota');
+
+            if (isAuthOrQuotaError && attempts < maxAttempts) {
+                console.warn(`⚠️ API Call failed with key ${currentKeyIndex}. Retrying with next key...`);
+                rotateKey();
+                continue; // Retry loop
+            }
+
+            // If it's a different error (e.g. Bad Request) or we ran out of keys, throw.
+            throw error;
+        }
+    }
+    throw new Error("All API keys in the pool failed.");
+};
+
+// --- HELPER ---
+
 const fileToGenerativePart = async (file: File) => {
   const base64EncodedDataPromise = new Promise((resolve) => {
     const reader = new FileReader();
@@ -16,69 +83,57 @@ const fileToGenerativePart = async (file: File) => {
   };
 };
 
-const getClient = () => {
-  // Vite replaces 'process.env.API_KEY' with the actual string value during build
-  const apiKey = process.env.API_KEY || process.env.GEMINI_API_KEY;
-  
-  if (!apiKey || apiKey.includes('PASTE_YOUR_NEW_KEY')) {
-    console.error("Critical Error: API Key is missing or invalid.");
-    throw new Error("Missing API Key. Please update your .env file.");
-  }
-  return new GoogleGenAI({ apiKey });
-};
+// --- PUBLIC API FUNCTIONS ---
 
 export const generateText = async (
   prompt: string, 
   history: { role: string, parts: { text: string }[] }[] = [],
   userInstruction: string = ""
 ): Promise<string> => {
-  try {
-    const ai = getClient();
-    const model = "gemini-3-flash-preview";
-    
-    const combinedSystemInstruction = `
-      You are an expert E-Commerce Seller Support Assistant.
-      
-      GLOBAL SOP CONTEXT:
-      ${SOP_CONTEXT}
-      
-      USER-SPECIFIC DIRECTIVE:
-      ${userInstruction || "Standard professional response."}
-      
-      INSTRUCTIONS:
-      - Answer the user's query professionally based on the context.
-      - Provide a single, clear response in the primary language (English) unless explicitly asked to translate.
-      - Use "We" and "Our" to represent the brand.
-      - Maintain a professional, empathetic, and helpful tone.
-    `;
+  return executeWithRetry(async (ai) => {
+      const model = "gemini-3-flash-preview";
+      const combinedSystemInstruction = `
+        You are an expert E-Commerce Seller Support Assistant (Spiel Master).
+        
+        GLOBAL SOP CONTEXT:
+        ${SOP_CONTEXT}
+        
+        USER-SPECIFIC DIRECTIVE:
+        ${userInstruction || "Standard professional response."}
+        
+        OUTPUT RULES:
+        1. STANDARD MODE (DEFAULT): 
+           - Provide a helpful, professional, and formatted text response.
+           - Use Markdown for formatting (e.g., **bold** for emphasis, lists for steps).
+           - Do NOT use JSON unless explicitly requested.
 
-    const chat = ai.chats.create({
-      model: model,
-      history: history,
-      config: {
-        systemInstruction: combinedSystemInstruction
-      }
-    });
+        2. DUAL-LANGUAGE MODE (STRICT CONDITIONAL):
+           - TRIGGER: ONLY IF the user EXPLICITLY asks for a response in BOTH "English" and "Portuguese" (e.g., "side-by-side", "both languages", "in English and Brazil").
+           - ACTION: If triggered, you MUST output the response in raw JSON format.
+           - JSON STRUCTURE:
+             {
+               "english": "The English version...",
+               "portuguese": "The Portuguese (Brazil) version..."
+             }
+           - Do NOT include markdown code blocks around the JSON.
+      `;
 
-    const response: GenerateContentResponse = await chat.sendMessage({ message: prompt });
-    return response.text || "";
-  } catch (error: any) {
-    console.error("Gemini Error:", error);
-    
-    const msg = error.message || JSON.stringify(error);
-    if (msg.includes("API key expired") || msg.includes("API_KEY_INVALID")) {
-        return "⚠️ SYSTEM ERROR: The Google API Key has expired. Please generate a new key at aistudio.google.com and update the website configuration.";
-    }
-    
-    return `Error: ${error.message || "I encountered an issue connecting to the AI service."}`;
-  }
+      const chat = ai.chats.create({
+        model: model,
+        history: history,
+        config: {
+          systemInstruction: combinedSystemInstruction
+        }
+      });
+
+      const response: GenerateContentResponse = await chat.sendMessage({ message: prompt });
+      return response.text || "";
+  });
 };
 
 export const translateText = async (text: string, targetLang: string): Promise<string> => {
-  try {
-    const ai = getClient();
+  return executeWithRetry(async (ai) => {
     const model = "gemini-3-flash-preview";
-    
     const response = await ai.models.generateContent({
       model: model,
       contents: `Translate the following text to ${targetLang}. 
@@ -93,19 +148,11 @@ export const translateText = async (text: string, targetLang: string): Promise<s
     });
 
     return response.text || "Translation failed.";
-  } catch (error: any) {
-    console.error("Translation Error:", error);
-    const msg = error.message || "";
-    if (msg.includes("API key expired")) {
-        return "Error: API Key Expired. Please update config.";
-    }
-    throw new Error(error.message || "Translation failed");
-  }
+  });
 };
 
 export const generateImage = async (prompt: string): Promise<string> => {
-  try {
-    const ai = getClient();
+  return executeWithRetry(async (ai) => {
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash-image',
       contents: {
@@ -124,16 +171,14 @@ export const generateImage = async (prompt: string): Promise<string> => {
       }
     }
     throw new Error("No image data was found in the model response.");
-  } catch (error: any) {
-    console.error("Image Generation Error:", error);
-    throw new Error(error.message || "Failed to generate image.");
-  }
+  });
 };
 
 export const analyzeImage = async (file: File, prompt: string): Promise<string> => {
-  try {
-    const ai = getClient();
-    const imagePart = await fileToGenerativePart(file);
+  // Pre-process file outside the retry loop to avoid overhead
+  const imagePart = await fileToGenerativePart(file);
+  
+  return executeWithRetry(async (ai) => {
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash-image',
       contents: {
@@ -142,15 +187,11 @@ export const analyzeImage = async (file: File, prompt: string): Promise<string> 
     });
 
     return response.text || "No analysis result returned.";
-  } catch (error: any) {
-    console.error("Image Analysis Error:", error);
-    throw new Error(error.message || "Failed to analyze image.");
-  }
+  });
 };
 
 export const generateVideo = async (prompt: string): Promise<string> => {
-  try {
-    const ai = getClient();
+  return executeWithRetry(async (ai) => {
     let operation = await ai.models.generateVideos({
       model: 'veo-3.1-fast-generate-preview',
       prompt: prompt,
@@ -161,6 +202,7 @@ export const generateVideo = async (prompt: string): Promise<string> => {
       }
     });
 
+    // Polling loop
     while (!operation.done) {
       await new Promise(resolve => setTimeout(resolve, 10000));
       operation = await ai.operations.getVideosOperation({ operation: operation });
@@ -171,10 +213,8 @@ export const generateVideo = async (prompt: string): Promise<string> => {
       throw new Error("Video generation succeeded but no download link was provided.");
     }
     
-    // Append API key for download if required
-    return `${downloadLink}&key=${process.env.API_KEY}`;
-  } catch (error: any) {
-    console.error("Video Generation Error:", error);
-    throw new Error(error.message || "Failed to generate video.");
-  }
+    // Note: We use the *current* key index for the download link
+    const currentKey = API_KEYS[currentKeyIndex];
+    return `${downloadLink}&key=${currentKey}`;
+  });
 };
