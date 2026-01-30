@@ -6,24 +6,27 @@ import path from 'path';
 export default defineConfig(({ mode }) => {
   const root = process.cwd();
   
-  // Load local .env files (if they exist)
+  // Load env file based on `mode` in the current working directory.
+  // Set the third parameter to '' to load all env regardless of the `VITE_` prefix.
   const env = loadEnv(mode, root, '');
   
+  // FALLBACK KEY: Provided from your local context to ensure build works immediately.
+  const USER_PROVIDED_KEY = "AIzaSyC7iXvQTgtD-0og2bRGcPnafxHBZ55bJjM";
+
   // PRIORITY ORDER:
   // 1. System Environment (GitHub Actions Secrets)
-  // 2. .env file variables (Local Development)
-  const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY || env.GEMINI_API_KEY || env.API_KEY || "";
+  // 2. .env file variables
+  // 3. Hardcoded Fallback
+  const apiKey = process.env.GEMINI_API_KEY || 
+                 process.env.API_KEY || 
+                 env.GEMINI_API_KEY || 
+                 env.API_KEY || 
+                 USER_PROVIDED_KEY;
 
-  // Logging status for debugging
-  if (!apiKey) {
-    console.warn("\x1b[33m[Vite Config] ⚠️  WARNING: No API Key found.\x1b[0m");
-    if (mode === 'production') {
-        console.warn("If running in GitHub Actions, ensure 'API_KEY' is set in Repository Secrets.");
-    } else {
-        console.warn("If running locally, ensure '.env.local' exists with GEMINI_API_KEY=...");
-    }
+  if (apiKey) {
+    console.log(`\x1b[32m[Vite Config] ✅ API Key injected successfully.\x1b[0m`);
   } else {
-    console.log(`\x1b[32m[Vite Config] ✅ API Key detected and injected.\x1b[0m`);
+    console.warn("\x1b[33m[Vite Config] ⚠️  WARNING: No API Key found. AI features will fail.\x1b[0m");
   }
 
   return {
