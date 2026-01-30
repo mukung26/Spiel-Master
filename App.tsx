@@ -62,7 +62,25 @@ const App: React.FC = () => {
   const [categories, setCategories] = useState<string[]>(INITIAL_CATEGORIES);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | 'All'>('All');
-  const [currentView, setCurrentView] = useState<View>(View.HOME);
+  
+  // Initialize View from LocalStorage
+  const [currentView, setCurrentView] = useState<View>(() => {
+    try {
+        const saved = localStorage.getItem('app_current_view');
+        // Check if saved value is a valid View enum
+        if (saved && Object.values(View).includes(saved as View)) {
+            return saved as View;
+        }
+    } catch (e) {
+        console.error("Failed to load view state", e);
+    }
+    return View.HOME;
+  });
+
+  // Persist View changes
+  useEffect(() => {
+    localStorage.setItem('app_current_view', currentView);
+  }, [currentView]);
   
   const [isEditMode, setIsEditMode] = useState(false);
   const [isCategoryEditMode, setIsCategoryEditMode] = useState(false);
@@ -186,6 +204,7 @@ const App: React.FC = () => {
     try {
       // 1. Reset View FIRST to ensure state is queued before unmount/re-render
       setCurrentView(View.HOME);
+      localStorage.removeItem('app_current_view'); // Clear saved view on logout
 
       // 2. Clear Auth
       if (localUser) {
