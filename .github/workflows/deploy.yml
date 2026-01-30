@@ -1,9 +1,10 @@
 
 name: Build and Deploy
 
-# We disabled the automatic trigger on 'push' because you are deploying from your local PC.
-# This prevents the "Red X" error in GitHub Actions.
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -23,11 +24,18 @@ jobs:
           cache: 'npm'
 
       - name: Install Dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build Project
         run: npm run build
         env:
-          # These are empty because you are building locally
+          # This injects the secret from GitHub Settings into the build process
           API_KEY: ${{ secrets.API_KEY }}
           GEMINI_API_KEY: ${{ secrets.API_KEY }}
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: dist
+          branch: gh-pages
+          clean: true
