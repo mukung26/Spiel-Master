@@ -64,7 +64,7 @@ export const AvatarGroup: React.FC<AvatarGroupProps> = ({ users, max = 4 }) => {
             +{remaining}
           </div>
           
-          {/* Expanded List Dropdown */}
+          {/* Expanded List Dropdown - Google Collaborator Style */}
           <div className="absolute top-full right-0 mt-2 bg-white dark:bg-[#1e1e1e] border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[100] transform origin-top-right">
             <div className="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-gray-800">
                 {remaining} More

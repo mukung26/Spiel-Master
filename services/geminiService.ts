@@ -17,8 +17,7 @@ const fileToGenerativePart = async (file: File) => {
 };
 
 const getClient = () => {
-  // Vite replaces these with string literals at build time.
-  // We check both common names to be safe.
+  // Vite replaces 'process.env.API_KEY' with the actual string value during build
   const apiKey = process.env.API_KEY || process.env.GEMINI_API_KEY;
   
   if (!apiKey) {
@@ -35,10 +34,8 @@ export const generateText = async (
 ): Promise<string> => {
   try {
     const ai = getClient();
-    // Switched to Flash for speed as requested ("smoother and faster even the ai")
     const model = "gemini-3-flash-preview";
     
-    // Combine standard SOP context with user's personal directives
     const combinedSystemInstruction = `
       You are an expert E-Commerce Seller Support Assistant.
       
@@ -164,6 +161,7 @@ export const generateVideo = async (prompt: string): Promise<string> => {
       throw new Error("Video generation succeeded but no download link was provided.");
     }
     
+    // Append API key for download if required
     return `${downloadLink}&key=${process.env.API_KEY}`;
   } catch (error: any) {
     console.error("Video Generation Error:", error);
